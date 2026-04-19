@@ -60,6 +60,7 @@ model Event {
   description  String
   date         DateTime
   venue        String
+  category     String
   visibility   Visibility
   feeCents     Int        @default(0)
   coverImage   String?
