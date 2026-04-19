@@ -11,6 +11,12 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors());
+
+// Special handled route for Stripe Webhook (needs raw body)
+// We define it before express.json()
+import * as paymentController from './modules/payments/payments.controller.js';
+app.post('/payments/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
+
 app.use(express.json());
 
 // Routes

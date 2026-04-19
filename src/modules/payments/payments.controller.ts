@@ -17,3 +17,13 @@ export async function createCheckout(req: Request, res: Response, next: NextFunc
     next(error);
   }
 }
+
+export async function webhook(req: Request, res: Response, next: any) {
+  try {
+    const signature = req.headers['stripe-signature'] as string;
+    const result = await paymentService.handleWebhook(req.body, signature);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}

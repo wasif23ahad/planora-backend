@@ -68,3 +68,45 @@ export async function createCheckoutSession(eventId: string, userId: string) {
 
   return { url: session.url, paymentId: payment.id };
 }
+
+export async function handleWebhook(body: any, signature: string) {
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err: any) {
+    throw new AppError(`Webhook Error: ${err.message}`, 400);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as any;
+    const { eventId, userId } = session.metadata;
+
+    await prisma.$transaction([
+      // 1. Update Payment
+      prisma.payment.updateMany({
+        where: { stripeSessionId: session.id },
+        data: { status: 'COMPLETED' },
+      }),
+      // 2. Create/Update Participation
+      prisma.participation.upsert({
+        where: {
+          eventId_userId: { eventId, userId },
+        },
+        create: {
+          eventId,
+          userId,
+          status: 'APPROVED',
+        },
+        update: {
+          status: 'APPROVED',
+        },
+      }),
+    ]);
+  }
+
+  return { received: true };
+}
