@@ -24,6 +24,9 @@ export async function joinEvent(eventId: string, userId: string) {
   });
 
   if (existingParticipation) {
+    if (existingParticipation.status === ParticipationStatus.BANNED) {
+      throw new AppError('You are banned from this event', 403);
+    }
     throw new AppError('You are already a participant or have a pending request', 409);
   }
 
@@ -41,5 +44,30 @@ export async function joinEvent(eventId: string, userId: string) {
       userId,
       status,
     },
+  });
+}
+
+export async function getParticipantsByEvent(eventId: string) {
+  return prisma.participation.findMany({
+    where: { eventId },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function updateParticipationStatus(
+  eventId: string,
+  userId: string,
+  status: ParticipationStatus
+) {
+  return prisma.participation.update({
+    where: {
+      eventId_userId: { eventId, userId },
+    },
+    data: { status },
   });
 }

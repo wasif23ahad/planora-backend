@@ -13,4 +13,8 @@ router.patch('/:id', requireAuth, eventController.update);
 router.delete('/:id', requireAuth, eventController.remove);
 router.post('/:id/join', requireAuth, participationController.join);
 
+// Participant management (Owner only)
+router.get('/:id/participants', requireAuth, participationController.getEventParticipants);
+router.patch('/:id/participants/:userId', requireAuth, participationController.updateStatus);
+
 export default router;
