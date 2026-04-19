@@ -50,6 +50,7 @@ model User {
   ownedEvents    Event[]         @relation("EventOwner")
   participations Participation[]
   invitations    Invitation[]    @relation("Invitee")
+  sentInvitations Invitation[]   @relation("Sender")
   reviews        Review[]
   payments       Payment[]
 }
@@ -98,12 +99,14 @@ model Participation {
 model Invitation {
   id         String           @id @default(cuid())
   eventId    String
+  senderId   String
   inviteeId  String
   status     InvitationStatus @default(PENDING)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
   event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sender     User  @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
   invitee    User  @relation("Invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, inviteeId])

@@ -5,8 +5,7 @@ import { AppError } from '../../middleware/error.js';
 
 export async function create(req: Request, res: Response, next: any) {
   try {
-    const validatedData = createEventSchema.parse(req.body);
-    const event = await eventService.createEvent(validatedData, req.user!.id);
+    const event = await eventService.createEvent(req.body, req.user!.id);
     res.status(201).json(event);
   } catch (error) {
     next(error);
@@ -36,8 +35,7 @@ export async function update(req: Request, res: Response, next: any) {
       throw new AppError('Forbidden: you do not own this event', 403);
     }
 
-    const validatedData = updateEventSchema.parse(req.body);
-    const updatedEvent = await eventService.updateEvent(req.params.id as string, validatedData);
+    const updatedEvent = await eventService.updateEvent(req.params.id as string, req.body);
     res.json(updatedEvent);
   } catch (error) {
     next(error);

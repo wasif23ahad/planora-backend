@@ -1,48 +1,48 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as authService from './auth.service.js';
-import { registerSchema, loginSchema } from './auth.schemas.js';
+import { AppError } from '../../middleware/error.js';
 
-export async function register(req: Request, res: Response) {
+export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const validatedData = registerSchema.parse(req.body);
-    const user = await authService.createUser(validatedData);
+    const user = await authService.createUser(req.body);
 
     const { passwordHash, ...userWithoutPassword } = user;
     res.status(201).json(userWithoutPassword);
   } catch (error: any) {
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ error: error.errors });
+    if (error.message === 'User already exists') {
+      return next(new AppError(error.message, 409));
     }
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 }
 
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const validatedData = loginSchema.parse(req.body);
-    const { user, token } = await authService.authenticateUser(validatedData);
+    const { user, token } = await authService.authenticateUser(req.body);
 
     const { passwordHash, ...userWithoutPassword } = user;
-    res.status(200).json({ user: userWithoutPassword, token });
+    res.json({
+      user: userWithoutPassword,
+      token,
+    });
   } catch (error: any) {
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ error: error.errors });
+    if (error.message === 'Invalid credentials') {
+      return next(new AppError(error.message, 401));
     }
-    res.status(401).json({ error: error.message });
+    next(error);
   }
 }
 
-export async function getMe(req: Request, res: Response) {
+export async function getMe(req: Request, res: Response, next: NextFunction) {
   try {
     const user = await authService.getUserById(req.user!.id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      throw new AppError('User not found', 404);
     }
 
     const { passwordHash, ...userWithoutPassword } = user;
-    res.status(200).json(userWithoutPassword);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.json(userWithoutPassword);
+  } catch (error) {
+    next(error);
   }
 }
-

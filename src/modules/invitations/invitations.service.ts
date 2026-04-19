@@ -12,7 +12,7 @@ export async function createInvitation(eventId: string, senderId: string, recipi
   // Check for existing invite
   const existing = await prisma.invitation.findUnique({
     where: {
-      eventId_recipientId: { eventId, recipientId: recipient.id },
+      eventId_inviteeId: { eventId, inviteeId: recipient.id },
     },
   });
 
@@ -22,7 +22,7 @@ export async function createInvitation(eventId: string, senderId: string, recipi
     data: {
       eventId,
       senderId,
-      recipientId: recipient.id,
+      inviteeId: recipient.id,
       status: InvitationStatus.PENDING,
     },
   });
@@ -30,7 +30,7 @@ export async function createInvitation(eventId: string, senderId: string, recipi
 
 export async function getMyInvitations(userId: string) {
   return prisma.invitation.findMany({
-    where: { recipientId: userId },
+    where: { inviteeId: userId },
     include: {
       event: {
         select: { title: true, date: true, venue: true, feeCents: true },
@@ -49,7 +49,7 @@ export async function updateInvitationStatus(invitationId: string, userId: strin
     include: { event: true },
   });
 
-  if (!invitation || invitation.recipientId !== userId) {
+  if (!invitation || invitation.inviteeId !== userId) {
     throw new AppError('Invitation not found', 404);
   }
 
@@ -74,8 +74,6 @@ export async function updateInvitationStatus(invitationId: string, userId: strin
           },
         });
       }
-      // Paid events require the user to go to the checkout flow separately
-      // after accepting the invite, or the frontend redirects to checkout.
     }
 
     return updatedInvite;
