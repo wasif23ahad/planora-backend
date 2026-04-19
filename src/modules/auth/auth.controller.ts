@@ -31,3 +31,18 @@ export async function login(req: Request, res: Response) {
     res.status(401).json({ error: error.message });
   }
 }
+
+export async function getMe(req: Request, res: Response) {
+  try {
+    const user = await authService.getUserById(req.user!.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { passwordHash, ...userWithoutPassword } = user;
+    res.status(200).json(userWithoutPassword);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}
+

@@ -44,3 +44,9 @@ export async function authenticateUser(data: LoginInput) {
 
   return { user, token };
 }
+
+export async function getUserById(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+  });
+}
