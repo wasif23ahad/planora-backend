@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as eventController from './events.controller.js';
 import * as participationController from '../participations/participations.controller.js';
 import * as invitationController from '../invitations/invitations.controller.js';
+import * as reviewController from '../reviews/reviews.controller.js';
 import { requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
@@ -18,5 +19,9 @@ router.post('/:id/join', requireAuth, participationController.join);
 router.get('/:id/participants', requireAuth, participationController.getEventParticipants);
 router.patch('/:id/participants/:userId', requireAuth, participationController.updateStatus);
 router.post('/:id/invite', requireAuth, invitationController.sendInvite);
+
+// Reviews (Event-specific)
+router.post('/:id/reviews', requireAuth, reviewController.create);
+router.get('/:id/reviews', reviewController.listForEvent);
 
 export default router;
