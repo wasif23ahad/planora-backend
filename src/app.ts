@@ -6,6 +6,7 @@ import eventRoutes from './modules/events/events.routes.js';
 import paymentRoutes from './modules/payments/payments.routes.js';
 import invitationRoutes from './modules/invitations/invitations.routes.js';
 import reviewRoutes from './modules/reviews/reviews.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 import { errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/events', eventRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/invitations', invitationRoutes);
 app.use('/reviews', reviewRoutes);
+app.use('/admin', adminRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
