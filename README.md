@@ -37,6 +37,6 @@ Express + Prisma + PostgreSQL API for the Planora events platform.
 
 - [x] B1. chore: scaffold express + typescript + prisma project
 - [x] B2. feat: define prisma schema with core models and enums
-- [ ] B3. feat: add auth register and login with bcrypt and jwt
+- [x] B3. feat: add auth register and login with bcrypt and jwt
 - [ ] B4. feat: add auth middleware and role-based access control
 - [ ] ...
