@@ -5,7 +5,7 @@ export async function createEvent(data: CreateEventInput, ownerId: string) {
   return prisma.event.create({
     data: {
       ...data,
-      date: new Date(data.date),
+      date: new Date(data.date as string),
       ownerId,
     },
   });
@@ -27,7 +27,7 @@ export async function updateEvent(id: string, data: UpdateEventInput) {
     where: { id },
     data: {
       ...data,
-      date: data.date ? new Date(data.date) : undefined,
+      date: data.date ? new Date((data.date as string)) : undefined,
     },
   });
 }
