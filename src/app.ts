@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import authRoutes from './modules/auth/auth.routes.js';
 import eventRoutes from './modules/events/events.routes.js';
 import paymentRoutes from './modules/payments/payments.routes.js';
+import invitationRoutes from './modules/invitations/invitations.routes.js';
 import { errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/events', eventRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/invitations', invitationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
