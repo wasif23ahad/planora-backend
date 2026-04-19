@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './modules/auth/auth.routes.js';
 import eventRoutes from './modules/events/events.routes.js';
+import paymentRoutes from './modules/payments/payments.routes.js';
 import { errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/events', eventRoutes);
+app.use('/payments', paymentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
