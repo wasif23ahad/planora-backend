@@ -62,3 +62,34 @@ export async function remove(req: Request, res: Response, next: any) {
     next(error);
   }
 }
+
+export async function list(req: Request, res: Response, next: any) {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
+
+    const result = await eventService.getAllEvents({
+      q: req.query.q as string,
+      category: req.query.category as string,
+      sort: req.query.sort as string,
+      page,
+      limit,
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function featured(req: Request, res: Response, next: any) {
+  try {
+    const event = await eventService.getFeaturedEvent();
+    if (!event) {
+      return res.status(404).json({ error: 'No featured event found' });
+    }
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+}
