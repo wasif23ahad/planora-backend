@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import * as adminController from './admin.controller.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { validate } from '../../middleware/validate.js';
+import { toggleUserStatusSchema } from './admin.schemas.js';
 
 const router = Router();
 
-// All routes here require ADMIN role
 router.use(requireAuth, requireRole('ADMIN'));
 
 router.get('/users', adminController.getUsers);
-router.patch('/users/:id/status', adminController.toggleUserStatus);
+router.patch('/users/:id/status', validate(toggleUserStatusSchema), adminController.toggleUserStatus);
 router.get('/events', adminController.getEvents);
 router.delete('/events/:id', adminController.deleteEvent);
 
