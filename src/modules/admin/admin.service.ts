@@ -26,7 +26,24 @@ export async function getAllEvents() {
     orderBy: { createdAt: 'desc' },
     include: {
       owner: { select: { name: true, email: true } },
-      _count: { select: { participants: true } },
+      _count: { select: { participations: true } },
     },
   });
+}
+
+export async function getStats() {
+  const [userCount, eventCount, revenueSum] = await Promise.all([
+    prisma.user.count(),
+    prisma.event.count(),
+    prisma.payment.aggregate({
+      where: { status: 'SUCCEEDED' },
+      _sum: { amountCents: true },
+    }),
+  ]);
+
+  return {
+    totalUsers: userCount,
+    totalEvents: eventCount,
+    totalRevenue: revenueSum._sum.amountCents || 0,
+  };
 }

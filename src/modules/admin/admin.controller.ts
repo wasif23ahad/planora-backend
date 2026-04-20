@@ -40,3 +40,12 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
     next(error);
   }
 }
+
+export async function getStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const stats = await adminService.getStats();
+    res.json(stats);
+  } catch (error) {
+    next(error);
+  }
+}
