@@ -53,6 +53,7 @@ model User {
   sentInvitations Invitation[]   @relation("Sender")
   reviews        Review[]
   payments       Payment[]
+  supportMessages SupportMessage[]
 }
 
 model Event {
@@ -141,4 +142,12 @@ model Payment {
   user          User           @relation(fields: [userId], references: [id])
   event         Event          @relation(fields: [eventId], references: [id])
   participation Participation?
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
 }

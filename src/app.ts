@@ -7,13 +7,16 @@ import paymentRoutes from './modules/payments/payments.routes.js';
 import invitationRoutes from './modules/invitations/invitations.routes.js';
 import reviewRoutes from './modules/reviews/reviews.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
+import supportRoutes from './modules/support/support.routes.js';
 import { errorHandler } from './middleware/error.js';
+
+import { env } from './lib/env.js';
 
 const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
 
 // Special handled route for Stripe Webhook (needs raw body)
 // We define it before express.json()
@@ -29,6 +32,7 @@ app.use('/payments', paymentRoutes);
 app.use('/invitations', invitationRoutes);
 app.use('/reviews', reviewRoutes);
 app.use('/admin', adminRoutes);
+app.use('/support', supportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
