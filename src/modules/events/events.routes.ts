@@ -10,13 +10,15 @@ import { createReviewSchema } from '../reviews/reviews.schemas.js';
 import { updateParticipationStatusSchema } from '../participations/participations.schemas.js';
 import { sendInviteSchema } from '../invitations/invitations.schemas.js';
 
+import { upload } from '../../lib/cloudinary.js';
+
 const router = Router();
 
 router.get('/', eventController.list);
 router.get('/featured', eventController.featured);
-router.post('/', requireAuth, validate(createEventSchema), eventController.create);
+router.post('/', requireAuth, upload.single('coverImage'), validate(createEventSchema), eventController.create);
 router.get('/:id', eventController.getById);
-router.patch('/:id', requireAuth, validate(updateEventSchema), eventController.update);
+router.patch('/:id', requireAuth, upload.single('coverImage'), validate(updateEventSchema), eventController.update);
 router.delete('/:id', requireAuth, eventController.remove);
 router.post('/:id/join', requireAuth, participationController.join);
 

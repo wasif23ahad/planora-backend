@@ -11,7 +11,7 @@ export const createEventSchema = z.object({
     venue: z.string().min(1),
     category: z.string().min(1),
     visibility: z.nativeEnum(Visibility),
-    feeCents: z.number().int().min(0).default(0),
+    feeCents: z.coerce.number().int().min(0).default(0),
     coverImage: z.string().url().optional().nullable(),
   }),
 });
