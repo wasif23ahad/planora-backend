@@ -42,3 +42,21 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export async function listGiven(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reviews = await reviewService.getReviewsByUser(req.user!.id);
+    res.json(reviews);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function listReceived(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reviews = await reviewService.getReviewsForOwnedEvents(req.user!.id);
+    res.json(reviews);
+  } catch (error) {
+    next(error);
+  }
+}

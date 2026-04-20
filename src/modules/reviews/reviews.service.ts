@@ -75,3 +75,26 @@ export async function deleteReview(id: string, userId: string, isAdmin: boolean)
 
   return prisma.review.delete({ where: { id } });
 }
+
+export async function getReviewsByUser(userId: string) {
+  return prisma.review.findMany({
+    where: { userId },
+    include: {
+      event: { select: { title: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function getReviewsForOwnedEvents(ownerId: string) {
+  return prisma.review.findMany({
+    where: {
+      event: { ownerId },
+    },
+    include: {
+      user: { select: { name: true } },
+      event: { select: { title: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
