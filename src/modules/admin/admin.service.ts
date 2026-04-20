@@ -31,6 +31,11 @@ export async function getAllEvents() {
   });
 }
 
+export async function toggleEventFeatured(id: string) {
+  const event = await prisma.event.findUnique({ where: { id }, select: { isFeatured: true } });
+  return prisma.event.update({ where: { id }, data: { isFeatured: !event?.isFeatured } });
+}
+
 export async function getStats() {
   const [userCount, eventCount, revenueSum] = await Promise.all([
     prisma.user.count(),

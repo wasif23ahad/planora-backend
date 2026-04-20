@@ -89,6 +89,15 @@ export async function list(req: Request, res: Response, next: any) {
   }
 }
 
+export async function listOwned(req: Request, res: Response, next: any) {
+  try {
+    const events = await eventService.getOwnedEvents(req.user!.id);
+    res.json(events);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function featured(req: Request, res: Response, next: any) {
   try {
     const event = await eventService.getFeaturedEvent();

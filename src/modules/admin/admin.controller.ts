@@ -41,6 +41,16 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
   }
 }
 
+export async function toggleFeature(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const event = await adminService.toggleEventFeatured(id as string);
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getStats(req: Request, res: Response, next: NextFunction) {
   try {
     const stats = await adminService.getStats();

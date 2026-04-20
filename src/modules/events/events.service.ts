@@ -126,6 +126,17 @@ export async function getAllEvents(params: {
   return { items, total, page, limit };
 }
 
+export async function getOwnedEvents(ownerId: string) {
+  return prisma.event.findMany({
+    where: { ownerId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      owner: { select: { id: true, name: true } },
+      _count: { select: { participations: true } },
+    },
+  });
+}
+
 export async function getFeaturedEvent() {
   return prisma.event.findFirst({
     where: { isFeatured: true, visibility: 'PUBLIC' },

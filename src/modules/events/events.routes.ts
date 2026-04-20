@@ -16,6 +16,7 @@ const router = Router();
 
 router.get('/', eventController.list);
 router.get('/featured', eventController.featured);
+router.get('/me', requireAuth, eventController.listOwned);
 router.post('/', requireAuth, upload.single('coverImage'), validate(createEventSchema), eventController.create);
 router.get('/:id', eventController.getById);
 router.patch('/:id', requireAuth, upload.single('coverImage'), validate(updateEventSchema), eventController.update);

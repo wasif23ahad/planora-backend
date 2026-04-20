@@ -12,6 +12,7 @@ router.get('/users', adminController.getUsers);
 router.patch('/users/:id/status', validate(toggleUserStatusSchema), adminController.toggleUserStatus);
 router.get('/events', adminController.getEvents);
 router.delete('/events/:id', adminController.deleteEvent);
+router.patch('/events/:id/feature', adminController.toggleFeature);
 router.get('/stats', adminController.getStats);
 
 export default router;
