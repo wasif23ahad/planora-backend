@@ -56,6 +56,7 @@ async function main() {
       date: new Date('2026-09-15T10:00:00Z'),
       venue: 'Convention Center, NYC',
       category: 'Technology',
+      coverImage: 'https://images.unsplash.com/photo-1540575861501-7ce0e2137463',
       visibility: Visibility.PUBLIC,
       feeCents: 5000, // $50.00
       isFeatured: true,
@@ -70,6 +71,7 @@ async function main() {
       date: new Date('2026-10-01T09:00:00Z'),
       venue: 'University Lab',
       category: 'Coding',
+      coverImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
       visibility: Visibility.PUBLIC,
       feeCents: 0,
       isFeatured: false,
@@ -84,6 +86,7 @@ async function main() {
       date: new Date('2026-08-20T19:00:00Z'),
       venue: 'Secret Terrace',
       category: 'Networking',
+      coverImage: 'https://images.unsplash.com/photo-1559339352-11d035aa65de',
       visibility: Visibility.PRIVATE,
       feeCents: 0,
       isFeatured: false,
@@ -91,7 +94,82 @@ async function main() {
     },
   });
 
-  console.log('📅 Created sample events (Public Paid, Public Free, Private).');
+  const event4 = await prisma.event.create({
+    data: {
+      title: 'Dhaka Food Fest 2026',
+      description: 'The ultimate culinary journey through the heart of Bangladesh. Sample the finest street food and gourmet delights.',
+      date: new Date('2026-11-10T11:00:00Z'),
+      venue: 'Purbachal International Convention City',
+      category: 'Food',
+      coverImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1',
+      visibility: Visibility.PUBLIC,
+      feeCents: 50000, // ৳500
+      isFeatured: true,
+      ownerId: owner.id,
+    },
+  });
+
+  const event5 = await prisma.event.create({
+    data: {
+      title: 'Lalbagh Fort Photography Walk',
+      description: 'Capture the soul of Old Dhaka through your lens. A guided tour focusing on architectural history and light.',
+      date: new Date('2026-07-05T15:00:00Z'),
+      venue: 'Lalbagh Fort, Old Dhaka',
+      category: 'Arts',
+      coverImage: 'https://images.unsplash.com/photo-1518391846015-55a9cc003b25',
+      visibility: Visibility.PUBLIC,
+      feeCents: 0,
+      isFeatured: false,
+      ownerId: owner.id,
+    },
+  });
+
+  const event6 = await prisma.event.create({
+    data: {
+      title: 'Mirpur T20 Final Showdown',
+      description: 'Experience the roar of the crowd at the home of cricket. The most anticipated match of the regional championship.',
+      date: new Date('2026-12-20T18:00:00Z'),
+      venue: 'Sher-e-Bangla National Stadium, Mirpur',
+      category: 'Sports',
+      coverImage: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da',
+      visibility: Visibility.PUBLIC,
+      feeCents: 120000, // ৳1,200
+      isFeatured: true,
+      ownerId: owner.id,
+    },
+  });
+
+  const event7 = await prisma.event.create({
+    data: {
+      title: 'Traditional Pitha Mela',
+      description: 'Celebrate the winter season with hundreds of varieties of traditional cakes and local folklore performances.',
+      date: new Date('2026-01-15T16:00:00Z'),
+      venue: 'Shilpakala Academy, Segunbagicha',
+      category: 'Culture',
+      coverImage: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9',
+      visibility: Visibility.PUBLIC,
+      feeCents: 10000, // ৳100
+      isFeatured: false,
+      ownerId: owner.id,
+    },
+  });
+
+  const event8 = await prisma.event.create({
+    data: {
+      title: 'Startup Dhaka Bootcamp',
+      description: 'Three days of intensive building, mentoring, and investor pitches for the next generation of entrepreneurs.',
+      date: new Date('2026-05-12T09:00:00Z'),
+      venue: 'The Westin, Gulshan 2',
+      category: 'Business',
+      coverImage: 'https://images.unsplash.com/photo-1556761175-b413da4baf72',
+      visibility: Visibility.PUBLIC,
+      feeCents: 250000, // ৳2,500
+      isFeatured: false,
+      ownerId: owner.id,
+    },
+  });
+
+  console.log('📅 Created sample events (Dhaka set).');
 
   // 4. Create Participations
   await prisma.participation.create({

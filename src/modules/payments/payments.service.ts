@@ -89,7 +89,7 @@ export async function handleWebhook(body: any, signature: string) {
       // 1. Update Payment
       prisma.payment.updateMany({
         where: { stripeSessionId: session.id },
-        data: { status: 'COMPLETED' },
+        data: { status: 'SUCCEEDED' },
       }),
       // 2. Create/Update Participation
       prisma.participation.upsert({
