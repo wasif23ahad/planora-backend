@@ -3,6 +3,7 @@ import { sslcz } from '../../lib/sslcommerz.js';
 import { AppError } from '../../middleware/error.js';
 import { PaymentStatus } from '@prisma/client';
 import { env } from '../../lib/env.js';
+import { SSLCommerzValidationResponse } from 'sslcommerz-lts';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:4000';
 
@@ -58,7 +59,7 @@ export async function createSSLSession(eventId: string, userId: string) {
   }
 }
 
-export async function verifyPayment(data: any) {
+export async function verifyPayment(data: SSLCommerzValidationResponse) {
   // data is the body of the POST request from SSLCommerz
   const { status, tran_id, val_id } = data;
 

@@ -30,7 +30,7 @@ export async function authenticateUser(data: LoginInput) {
     where: { email: data.email },
   });
 
-  if (!user || !user.isActive) {
+  if (!user || !user.isActive || !user.passwordHash) {
     throw new Error('Invalid credentials');
   }
 
