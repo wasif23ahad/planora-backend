@@ -18,10 +18,10 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
 
-// Special handled route for Stripe Webhook (needs raw body)
-// We define it before express.json()
-import * as paymentController from './modules/payments/payments.controller.js';
-app.post('/payments/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
+import passport from 'passport';
+app.use(passport.initialize());
+
+// We define it before express.json() if needed for other raw webhooks
 
 app.use(express.json());
 

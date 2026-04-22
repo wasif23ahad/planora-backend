@@ -54,11 +54,11 @@ async function main() {
       title: 'Tech Conference 2026',
       description: 'The biggest tech event of the year.',
       date: new Date('2026-09-15T10:00:00Z'),
-      venue: 'Convention Center, NYC',
+      venue: 'Online',
       category: 'Technology',
-      coverImage: 'https://images.unsplash.com/photo-1540575861501-7ce0e2137463',
+      coverImage: 'https://images.unsplash.com/photo-1511578314322-379afb476865',
       visibility: Visibility.PUBLIC,
-      feeCents: 5000, // $50.00
+      feeCents: 50000, // Public Paid: ৳500.00
       isFeatured: true,
       ownerId: owner.id,
     },
@@ -73,7 +73,7 @@ async function main() {
       category: 'Coding',
       coverImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
       visibility: Visibility.PUBLIC,
-      feeCents: 0,
+      feeCents: 0, // Public Free
       isFeatured: false,
       ownerId: owner.id,
     },
@@ -88,7 +88,7 @@ async function main() {
       category: 'Networking',
       coverImage: 'https://images.unsplash.com/photo-1559339352-11d035aa65de',
       visibility: Visibility.PRIVATE,
-      feeCents: 0,
+      feeCents: 0, // Private Free
       isFeatured: false,
       ownerId: owner.id,
     },
@@ -102,8 +102,8 @@ async function main() {
       venue: 'Purbachal International Convention City',
       category: 'Food',
       coverImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1',
-      visibility: Visibility.PUBLIC,
-      feeCents: 50000, // ৳500
+      visibility: Visibility.PRIVATE,
+      feeCents: 100000, // Private Paid: ৳1,000.00
       isFeatured: true,
       ownerId: owner.id,
     },
@@ -133,7 +133,7 @@ async function main() {
       category: 'Sports',
       coverImage: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da',
       visibility: Visibility.PUBLIC,
-      feeCents: 120000, // ৳1,200
+      feeCents: 120000, // ৳1,200.00
       isFeatured: true,
       ownerId: owner.id,
     },
@@ -148,7 +148,7 @@ async function main() {
       category: 'Culture',
       coverImage: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9',
       visibility: Visibility.PUBLIC,
-      feeCents: 10000, // ৳100
+      feeCents: 10000, // ৳100.00
       isFeatured: false,
       ownerId: owner.id,
     },
@@ -163,7 +163,7 @@ async function main() {
       category: 'Business',
       coverImage: 'https://images.unsplash.com/photo-1556761175-b413da4baf72',
       visibility: Visibility.PUBLIC,
-      feeCents: 250000, // ৳2,500
+      feeCents: 250000, // ৳2,500.00
       isFeatured: false,
       ownerId: owner.id,
     },

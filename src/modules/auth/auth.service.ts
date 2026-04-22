@@ -50,3 +50,7 @@ export async function getUserById(id: string) {
     where: { id },
   });
 }
+
+export function generateToken(user: { id: string, role: string }) {
+  return signToken({ sub: user.id, role: user.role });
+}

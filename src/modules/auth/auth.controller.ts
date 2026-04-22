@@ -46,3 +46,22 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export async function googleCallback(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) {
+      throw new AppError('Google authentication failed', 401);
+    }
+
+    const token = authService.generateToken(req.user as any);
+    
+    // Redirect to frontend with token
+    // In production, you might want to use a more secure way to pass the token
+    const redirectUrl = new URL(`${process.env.FRONTEND_URL}/login/success`);
+    redirectUrl.searchParams.set('token', token);
+    
+    res.redirect(redirectUrl.toString());
+  } catch (error) {
+    next(error);
+  }
+}

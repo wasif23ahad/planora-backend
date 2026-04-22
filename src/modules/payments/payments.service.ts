@@ -1,112 +1,101 @@
 import { prisma } from '../../config/prisma.js';
-import { stripe } from '../../lib/stripe.js';
+import { sslcz } from '../../lib/sslcommerz.js';
 import { AppError } from '../../middleware/error.js';
 import { PaymentStatus } from '@prisma/client';
+import { env } from '../../lib/env.js';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const BACKEND_URL = env.BACKEND_URL || 'http://localhost:4000';
 
-export async function createCheckoutSession(eventId: string, userId: string) {
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
-  });
+export async function createSSLSession(eventId: string, userId: string) {
+  const [event, user] = await Promise.all([
+    prisma.event.findUnique({ where: { id: eventId } }),
+    prisma.user.findUnique({ where: { id: userId } }),
+  ]);
 
-  if (!event) {
-    throw new AppError('Event not found', 404);
-  }
+  if (!event) throw new AppError('Event not found', 404);
+  if (!user) throw new AppError('User not found', 404);
+  if (event.feeCents === 0) throw new AppError('This is a free event.', 400);
 
-  if (event.feeCents === 0) {
-    throw new AppError('This is a free event. Please use the join flow.', 400);
-  }
+  const tran_id = `TXN_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
-  // Check if already joined/participating
-  const existingParticipation = await prisma.participation.findUnique({
-    where: {
-      eventId_userId: { eventId, userId },
-    },
-  });
+  const data = {
+    total_amount: event.feeCents / 100, // SSLCommerz expects amount in major units (Taka)
+    currency: 'BDT',
+    tran_id: tran_id,
+    success_url: `${BACKEND_URL}/payments/success`,
+    fail_url: `${BACKEND_URL}/payments/fail`,
+    cancel_url: `${BACKEND_URL}/payments/cancel`,
+    ipn_url: `${BACKEND_URL}/payments/ipn`,
+    shipping_method: 'NO',
+    product_name: event.title,
+    product_category: event.category,
+    product_profile: 'general',
+    cus_name: user.name,
+    cus_email: user.email,
+    cus_add1: 'Dhaka',
+    cus_city: 'Dhaka',
+    cus_state: 'Dhaka',
+    cus_postcode: '1000',
+    cus_country: 'Bangladesh',
+    cus_phone: '01700000000',
+  };
 
-  if (existingParticipation && existingParticipation.status === 'APPROVED') {
-    throw new AppError('You are already a participant in this event', 409);
-  }
-
-  // Create Stripe Session
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: event.title,
-            description: `Registration for ${event.title}`,
-          },
-          unit_amount: event.feeCents,
-        },
-        quantity: 1,
+  const response = await sslcz.init(data);
+  
+  if (response?.GatewayPageURL) {
+    await prisma.payment.create({
+      data: {
+        eventId,
+        userId,
+        amountCents: event.feeCents,
+        transactionId: tran_id,
+        status: PaymentStatus.PENDING,
       },
-    ],
-    mode: 'payment',
-    success_url: `${FRONTEND_URL}/events/${eventId}?payment=success`,
-    cancel_url: `${FRONTEND_URL}/events/${eventId}?payment=cancelled`,
-    metadata: {
-      eventId,
-      userId,
-    },
-  });
-
-  // Create Payment record (PENDING)
-  // Note: We don't create Participation yet; we wait for the webhook.
-  const payment = await prisma.payment.create({
-    data: {
-      eventId,
-      userId,
-      amountCents: event.feeCents,
-      stripeSessionId: session.id,
-      status: PaymentStatus.PENDING,
-    },
-  });
-
-  return { url: session.url, paymentId: payment.id };
+    });
+    return { url: response.GatewayPageURL };
+  } else {
+    throw new AppError('SSLCommerz session creation failed', 500);
+  }
 }
 
-export async function handleWebhook(body: any, signature: string) {
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err: any) {
-    throw new AppError(`Webhook Error: ${err.message}`, 400);
-  }
+export async function verifyPayment(data: any) {
+  // data is the body of the POST request from SSLCommerz
+  const { status, tran_id, val_id } = data;
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any;
-    const { eventId, userId } = session.metadata;
+  const payment = await prisma.payment.findUnique({
+    where: { transactionId: tran_id },
+  });
 
+  if (!payment) throw new AppError('Payment record not found', 404);
+
+  if (status === 'VALID') {
     await prisma.$transaction([
-      // 1. Update Payment
-      prisma.payment.updateMany({
-        where: { stripeSessionId: session.id },
-        data: { status: 'SUCCEEDED' },
+      prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: 'SUCCEEDED', valId: val_id },
       }),
-      // 2. Create/Update Participation
       prisma.participation.upsert({
         where: {
-          eventId_userId: { eventId, userId },
+          eventId_userId: { eventId: payment.eventId, userId: payment.userId },
         },
         create: {
-          eventId,
-          userId,
+          eventId: payment.eventId,
+          userId: payment.userId,
           status: 'APPROVED',
+          paymentId: payment.id,
         },
         update: {
           status: 'APPROVED',
+          paymentId: payment.id,
         },
       }),
     ]);
+    return { success: true, eventId: payment.eventId };
+  } else {
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: 'FAILED' },
+    });
+    return { success: false, eventId: payment.eventId };
   }
-
-  return { received: true };
 }

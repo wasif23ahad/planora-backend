@@ -41,7 +41,8 @@ model User {
   id             String   @id @default(cuid())
   name           String
   email          String   @unique
-  passwordHash   String
+  passwordHash   String?
+  googleId       String?  @unique
   role           Role     @default(USER)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
@@ -133,8 +134,8 @@ model Payment {
   userId                String
   eventId               String
   amountCents           Int
-  stripeSessionId       String        @unique
-  stripePaymentIntentId String?       @unique
+  transactionId         String        @unique
+  valId                 String?       @unique
   status                PaymentStatus @default(PENDING)
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
