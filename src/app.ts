@@ -58,6 +58,11 @@ app.use('/reviews', reviewRoutes);
 app.use('/admin', adminRoutes);
 app.use('/support', supportRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'Planora API is running successfully!' });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ ok: true });
