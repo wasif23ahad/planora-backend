@@ -3,12 +3,22 @@ import * as eventService from './events.service.js';
 import { createEventSchema, updateEventSchema } from './events.schemas.js';
 import { AppError } from '../../middleware/error.js';
 
+import cloudinary from '../../lib/cloudinary.js';
+
 export async function create(req: Request, res: Response, next: any) {
   try {
     const eventData = { ...req.body };
-    if (req.file) {
-      eventData.coverImage = (req.file as any).path;
+    
+    // If a base64 coverImage was provided, upload it to Cloudinary
+    if (eventData.coverImage && eventData.coverImage.startsWith('data:image')) {
+      const uploadRes = await cloudinary.uploader.upload(eventData.coverImage, {
+        folder: "planora/events",
+        allowed_formats: ["jpg", "png", "jpeg", "webp"],
+        transformation: [{ width: 800, height: 600, crop: "limit" }]
+      });
+      eventData.coverImage = uploadRes.secure_url;
     }
+
     const event = await eventService.createEvent(eventData, req.user!.id);
     res.status(201).json(event);
   } catch (error) {
@@ -40,8 +50,14 @@ export async function update(req: Request, res: Response, next: any) {
     }
 
     const eventData = { ...req.body };
-    if (req.file) {
-      eventData.coverImage = (req.file as any).path;
+    
+    if (eventData.coverImage && eventData.coverImage.startsWith('data:image')) {
+      const uploadRes = await cloudinary.uploader.upload(eventData.coverImage, {
+        folder: "planora/events",
+        allowed_formats: ["jpg", "png", "jpeg", "webp"],
+        transformation: [{ width: 800, height: 600, crop: "limit" }]
+      });
+      eventData.coverImage = uploadRes.secure_url;
     }
 
     const updatedEvent = await eventService.updateEvent(req.params.id as string, eventData);

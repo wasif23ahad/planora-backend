@@ -19,9 +19,9 @@ router.get('/featured', eventController.featured);
 router.get('/me', requireAuth, eventController.listOwned);
 router.get('/joined', requireAuth, participationController.listJoined);
 router.get('/participations/:id', requireAuth, participationController.getParticipation);
-router.post('/', requireAuth, upload.single('coverImage'), validate(createEventSchema), eventController.create);
+router.post('/', requireAuth, validate(createEventSchema), eventController.create);
 router.get('/:id', eventController.getById);
-router.patch('/:id', requireAuth, upload.single('coverImage'), validate(updateEventSchema), eventController.update);
+router.patch('/:id', requireAuth, validate(updateEventSchema), eventController.update);
 router.delete('/:id', requireAuth, eventController.remove);
 router.post('/:id/join', requireAuth, participationController.join);
 
