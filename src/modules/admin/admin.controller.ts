@@ -22,6 +22,20 @@ export async function toggleUserStatus(req: Request, res: Response, next: NextFu
   }
 }
 
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    // Prevent admin from deleting themselves
+    if (id === req.user!.id) {
+      return res.status(400).json({ error: { message: 'You cannot delete your own account.' } });
+    }
+    await adminService.deleteUser(id as string);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getEvents(req: Request, res: Response, next: NextFunction) {
   try {
     const events = await adminService.getAllEvents();

@@ -10,6 +10,7 @@ router.use(requireAuth, requireRole('ADMIN'));
 
 router.get('/users', adminController.getUsers);
 router.patch('/users/:id/status', validate(toggleUserStatusSchema), adminController.toggleUserStatus);
+router.delete('/users/:id', adminController.deleteUser);
 router.get('/events', adminController.getEvents);
 router.delete('/events/:id', adminController.deleteEvent);
 router.patch('/events/:id/feature', adminController.toggleFeature);

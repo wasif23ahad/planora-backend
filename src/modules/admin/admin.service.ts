@@ -21,6 +21,12 @@ export async function updateUserStatus(id: string, isActive: boolean) {
   });
 }
 
+export async function deleteUser(id: string) {
+  // Must manually delete payments first — Payment.userId has no cascade rule
+  await prisma.payment.deleteMany({ where: { userId: id } });
+  return prisma.user.delete({ where: { id } });
+}
+
 export async function getAllEvents() {
   return prisma.event.findMany({
     orderBy: { createdAt: 'desc' },
