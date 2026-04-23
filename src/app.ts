@@ -16,7 +16,26 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+// Flexible CORS to handle Vercel preview URLs and trailing slashes
+const allowedOrigins = [
+  env.FRONTEND_URL.replace(/\/$/, ''), // Remove trailing slash if present
+  'http://localhost:3000',
+  'https://planora-frontend-green.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in our explicit list or is a Vercel preview URL for our project
+    if (allowedOrigins.includes(origin) || origin.includes('planora-frontend')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 import passport from 'passport';
 app.use(passport.initialize());
