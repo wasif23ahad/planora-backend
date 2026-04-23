@@ -25,7 +25,6 @@ This document outlines the core REST API endpoints available in the Planora back
 **Success Response (201 Created):**
 ```json
 {
-  "message": "User registered successfully",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "cm3r5...",
@@ -52,7 +51,6 @@ This document outlines the core REST API endpoints available in the Planora back
 **Success Response (200 OK):**
 ```json
 {
-  "message": "Login successful",
   "token": "eyJhbGciOiJIUzI1...",
   "user": {
     "id": "cm3r5...",
@@ -83,24 +81,19 @@ This document outlines the core REST API endpoints available in the Planora back
 **Success Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Events retrieved successfully",
-  "meta": {
-    "page": 1,
-    "limit": 10,
-    "total": 15
-  },
-  "data": [
+  "items": [
     {
       "id": "evt_123",
       "title": "Tech Conference 2024",
       "status": "UPCOMING",
       "priceCents": 150000,
       "category": "TECHNOLOGY",
-      "capacity": 500,
-      "joined": 45
+      "capacity": 500
     }
-  ]
+  ],
+  "total": 15,
+  "page": 1,
+  "limit": 10
 }
 ```
 
@@ -128,13 +121,9 @@ This document outlines the core REST API endpoints available in the Planora back
 **Success Response (201 Created):**
 ```json
 {
-  "success": true,
-  "message": "Event created successfully",
-  "data": {
-    "id": "evt_789",
-    "title": "React Masterclass",
-    "coverImageUrl": "https://res.cloudinary.com/..."
-  }
+  "id": "evt_789",
+  "title": "React Masterclass",
+  "coverImageUrl": "https://res.cloudinary.com/..."
 }
 ```
 
@@ -160,11 +149,7 @@ This document outlines the core REST API endpoints available in the Planora back
 **Success Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Payment initiated successfully",
-  "data": {
-    "paymentUrl": "https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=..."
-  }
+  "paymentUrl": "https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=..."
 }
 ```
 
