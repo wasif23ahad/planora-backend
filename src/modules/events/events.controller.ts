@@ -90,6 +90,7 @@ export async function list(req: Request, res: Response, next: any) {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 12;
+    const upcoming = req.query.upcoming === 'true';
 
     const result = await eventService.getAllEvents({
       q: req.query.q as string,
@@ -97,6 +98,7 @@ export async function list(req: Request, res: Response, next: any) {
       sort: req.query.sort as string,
       page,
       limit,
+      upcoming,
     });
 
     res.json(result);

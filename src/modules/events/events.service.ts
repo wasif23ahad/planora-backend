@@ -59,13 +59,18 @@ export async function getAllEvents(params: {
   sort?: string;
   page: number;
   limit: number;
+  upcoming?: boolean;
 }) {
-  const { q, category, sort, page, limit } = params;
+  const { q, category, sort, page, limit, upcoming } = params;
   const skip = (page - 1) * limit;
 
   const where: any = {
     visibility: 'PUBLIC', // Default to public for the main listing
   };
+
+  if (upcoming) {
+    where.date = { gte: new Date() };
+  }
 
   if (q) {
     where.OR = [
