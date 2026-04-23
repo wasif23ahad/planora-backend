@@ -28,7 +28,11 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     // Check if origin is in our explicit list or is a Vercel preview URL for our project
-    if (allowedOrigins.includes(origin) || origin.includes('planora-frontend')) {
+    if (
+      allowedOrigins.includes(origin) || 
+      origin.includes('planora-frontend') ||
+      origin.includes('sslcommerz.com')
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
