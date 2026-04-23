@@ -64,7 +64,7 @@ export async function updateStatus(req: Request, res: Response, next: NextFuncti
 }
 export async function getParticipation(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const participation = await participationService.getParticipationById(id);
 
     if (!participation) {
