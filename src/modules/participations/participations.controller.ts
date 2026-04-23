@@ -7,8 +7,9 @@ export async function join(req: Request, res: Response, next: NextFunction) {
   try {
     const eventId = req.params.id as string;
     const userId = req.user!.id;
+    const { phoneNumber } = req.body;
 
-    const participation = await participationService.joinEvent(eventId, userId);
+    const participation = await participationService.joinEvent(eventId, userId, phoneNumber);
     
     res.status(201).json(participation);
   } catch (error) {
@@ -57,6 +58,37 @@ export async function updateStatus(req: Request, res: Response, next: NextFuncti
     );
 
     res.json(participation);
+  } catch (error) {
+    next(error);
+  }
+}
+export async function getParticipation(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const participation = await participationService.getParticipationById(id);
+
+    if (!participation) {
+      throw new AppError('Participation record not found', 404);
+    }
+
+    // Security check: Only the participant or event owner or admin can see this
+    if (
+      participation.userId !== req.user!.id && 
+      participation.event.ownerId !== req.user!.id && 
+      req.user!.role !== 'ADMIN'
+    ) {
+      throw new AppError('Forbidden', 403);
+    }
+
+    res.json(participation);
+  } catch (error) {
+    next(error);
+  }
+}
+export async function listJoined(req: Request, res: Response, next: NextFunction) {
+  try {
+    const participations = await participationService.getJoinedEvents(req.user!.id);
+    res.json(participations);
   } catch (error) {
     next(error);
   }

@@ -1,19 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import * as paymentService from './payments.service.js';
 import { env } from '../../lib/env.js';
+import { AppError } from '../../middleware/error.js';
 
 const FRONTEND_URL = env.FRONTEND_URL || 'http://localhost:3000';
 
 export async function createCheckout(req: Request, res: Response, next: NextFunction) {
   try {
-    const { eventId } = req.body;
+    const { eventId, phoneNumber } = req.body;
     const userId = req.user!.id;
 
     if (!eventId) {
-      return res.status(400).json({ error: 'eventId is required' });
+      throw new AppError('eventId is required', 400);
+    }
+    if (!phoneNumber) {
+      throw new AppError('phoneNumber is required', 400);
     }
 
-    const { url } = await paymentService.createSSLSession(eventId, userId);
+    const { url } = await paymentService.createSSLSession(eventId, userId, phoneNumber);
     
     res.status(200).json({ url });
   } catch (error) {
@@ -26,9 +30,9 @@ export async function success(req: Request, res: Response, next: NextFunction) {
     const result = await paymentService.verifyPayment(req.body);
     
     if (result.success) {
-      res.redirect(`${FRONTEND_URL}/events/${result.eventId}?payment=success`);
+      res.redirect(`${FRONTEND_URL}/payments/success?eventId=${result.eventId}`);
     } else {
-      res.redirect(`${FRONTEND_URL}/events/${result.eventId}?payment=failed`);
+      res.redirect(`${FRONTEND_URL}/payments/cancel?eventId=${result.eventId}`);
     }
   } catch (error) {
     next(error);
@@ -38,7 +42,7 @@ export async function success(req: Request, res: Response, next: NextFunction) {
 export async function fail(req: Request, res: Response, next: NextFunction) {
   try {
     // req.body contains tran_id
-    res.redirect(`${FRONTEND_URL}/dashboard?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/payments/cancel`);
   } catch (error) {
     next(error);
   }
@@ -46,7 +50,7 @@ export async function fail(req: Request, res: Response, next: NextFunction) {
 
 export async function cancel(req: Request, res: Response, next: NextFunction) {
   try {
-    res.redirect(`${FRONTEND_URL}/dashboard?payment=cancelled`);
+    res.redirect(`${FRONTEND_URL}/payments/cancel`);
   } catch (error) {
     next(error);
   }

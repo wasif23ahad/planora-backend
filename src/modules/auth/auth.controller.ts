@@ -47,6 +47,16 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function updateProfile(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = await authService.updateUser(req.user!.id, req.body);
+    const { passwordHash, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function googleCallback(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.user) {

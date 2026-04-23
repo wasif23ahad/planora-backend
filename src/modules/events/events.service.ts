@@ -18,6 +18,9 @@ export async function getEventById(id: string) {
       owner: {
         select: { id: true, name: true, email: true },
       },
+      _count: {
+        select: { participations: true },
+      },
     },
   });
 }

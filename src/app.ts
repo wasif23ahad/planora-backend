@@ -24,6 +24,7 @@ app.use(passport.initialize());
 // We define it before express.json() if needed for other raw webhooks
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/auth', authRoutes);

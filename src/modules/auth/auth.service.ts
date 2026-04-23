@@ -51,6 +51,13 @@ export async function getUserById(id: string) {
   });
 }
 
+export async function updateUser(id: string, data: { name?: string, phoneNumber?: string }) {
+  return prisma.user.update({
+    where: { id },
+    data,
+  });
+}
+
 export function generateToken(user: { id: string, role: string }) {
   return signToken({ sub: user.id, role: user.role });
 }

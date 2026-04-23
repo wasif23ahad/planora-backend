@@ -13,7 +13,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   SSL_STORE_ID: z.string().optional(),
   SSL_STORE_PASS: z.string().optional(),
-  IS_SANDBOX: z.coerce.boolean().default(true),
+  IS_SANDBOX: z.preprocess((val) => val === 'true' || val === true, z.boolean()).default(true),
   CLOUDINARY_CLOUD_NAME: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),

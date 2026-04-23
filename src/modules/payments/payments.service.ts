@@ -7,7 +7,7 @@ import { SSLCommerzValidationResponse } from 'sslcommerz-lts';
 
 const BACKEND_URL = env.BACKEND_URL || 'http://localhost:4000';
 
-export async function createSSLSession(eventId: string, userId: string) {
+export async function createSSLSession(eventId: string, userId: string, phoneNumber: string) {
   const [event, user] = await Promise.all([
     prisma.event.findUnique({ where: { id: eventId } }),
     prisma.user.findUnique({ where: { id: userId } }),
@@ -38,24 +38,26 @@ export async function createSSLSession(eventId: string, userId: string) {
     cus_state: 'Dhaka',
     cus_postcode: '1000',
     cus_country: 'Bangladesh',
-    cus_phone: '01700000000',
+    cus_phone: phoneNumber,
   };
 
   const response = await sslcz.init(data);
   
   if (response?.GatewayPageURL) {
-    await prisma.payment.create({
+    await (prisma.payment as any).create({
       data: {
         eventId,
         userId,
         amountCents: event.feeCents,
         transactionId: tran_id,
+        phoneNumber: phoneNumber,
         status: PaymentStatus.PENDING,
       },
     });
     return { url: response.GatewayPageURL };
   } else {
-    throw new AppError('SSLCommerz session creation failed', 500);
+    console.error('SSLCommerz Init Failed. Response:', response);
+    throw new AppError(`SSLCommerz session creation failed: ${response?.failedreason || 'Unknown error'}`, 500);
   }
 }
 
@@ -63,7 +65,7 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
   // data is the body of the POST request from SSLCommerz
   const { status, tran_id, val_id } = data;
 
-  const payment = await prisma.payment.findUnique({
+  const payment = await (prisma.payment as any).findUnique({
     where: { transactionId: tran_id },
   });
 
@@ -71,11 +73,11 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
 
   if (status === 'VALID') {
     await prisma.$transaction([
-      prisma.payment.update({
+      (prisma.payment as any).update({
         where: { id: payment.id },
         data: { status: 'SUCCEEDED', valId: val_id },
       }),
-      prisma.participation.upsert({
+      (prisma.participation as any).upsert({
         where: {
           eventId_userId: { eventId: payment.eventId, userId: payment.userId },
         },
@@ -84,10 +86,12 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
           userId: payment.userId,
           status: 'APPROVED',
           paymentId: payment.id,
+          phoneNumber: payment.phoneNumber,
         },
         update: {
           status: 'APPROVED',
           paymentId: payment.id,
+          phoneNumber: payment.phoneNumber,
         },
       }),
     ]);

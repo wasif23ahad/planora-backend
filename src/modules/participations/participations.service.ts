@@ -2,7 +2,7 @@ import { prisma } from '../../config/prisma.js';
 import { ParticipationStatus, Visibility } from '@prisma/client';
 import { AppError } from '../../middleware/error.js';
 
-export async function joinEvent(eventId: string, userId: string) {
+export async function joinEvent(eventId: string, userId: string, phoneNumber?: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
   });
@@ -38,11 +38,12 @@ export async function joinEvent(eventId: string, userId: string) {
       ? ParticipationStatus.APPROVED 
       : ParticipationStatus.PENDING;
 
-  return prisma.participation.create({
+  return (prisma.participation as any).create({
     data: {
       eventId,
       userId,
       status,
+      phoneNumber,
     },
   });
 }
@@ -69,5 +70,34 @@ export async function updateParticipationStatus(
       eventId_userId: { eventId, userId },
     },
     data: { status },
+  });
+}
+export async function getParticipationById(id: string) {
+  return prisma.participation.findUnique({
+    where: { id },
+    include: {
+      event: {
+        include: {
+          owner: { select: { name: true } },
+        },
+      },
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+      payment: true,
+    },
+  });
+}
+export async function getJoinedEvents(userId: string) {
+  return prisma.participation.findMany({
+    where: { userId },
+    include: {
+      event: {
+        include: {
+          owner: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
   });
 }
