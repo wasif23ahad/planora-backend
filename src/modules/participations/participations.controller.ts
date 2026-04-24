@@ -41,7 +41,7 @@ export async function getEventParticipants(req: Request, res: Response, next: Ne
 
 export async function updateStatus(req: Request, res: Response, next: NextFunction) {
   try {
-    const eventId = req.params.eventId as string;
+    const eventId = req.params.id as string;
     const userId = req.params.userId as string;
     const { status } = req.body;
 
@@ -59,18 +59,27 @@ export async function updateStatus(req: Request, res: Response, next: NextFuncti
       const userToInvite = await prisma.user.findUnique({ where: { id: userId } });
       if (!userToInvite) throw new AppError('User not found', 404);
 
-      // Create an invitation from the owner to the user
-      const invitation = await invitationService.createInvitation(
-        eventId as string,
-        req.user!.id,
-        userToInvite.email
-      );
+      // Check if user is already invited to avoid 409 error from service
+      const existingInvite = await prisma.invitation.findUnique({
+        where: { eventId_inviteeId: { eventId, inviteeId: userId } }
+      });
+
+      let invitation = existingInvite;
+      if (!invitation) {
+        // Create a new invitation from the owner to the user
+        invitation = await invitationService.createInvitation(
+          eventId as string,
+          req.user!.id,
+          userToInvite.email
+        );
+      }
 
       // Delete the pending participation record so it "goes out" as requested.
       // The user will now see the invitation in their invitations tab.
-      await prisma.participation.delete({
+      await prisma.participation.deleteMany({
         where: {
-          eventId_userId: { eventId: eventId as string, userId: userId as string },
+          eventId: eventId as string,
+          userId: userId as string,
         },
       });
 
