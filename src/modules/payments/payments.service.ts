@@ -67,11 +67,14 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
 
   const payment = await (prisma.payment as any).findUnique({
     where: { transactionId: tran_id },
+    include: { event: true },
   });
 
   if (!payment) throw new AppError('Payment record not found', 404);
 
   if (status === 'VALID') {
+    const participationStatus = payment.event.visibility === 'PRIVATE' ? 'PENDING' : 'APPROVED';
+    
     await prisma.$transaction([
       (prisma.payment as any).update({
         where: { id: payment.id },
@@ -84,12 +87,12 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
         create: {
           eventId: payment.eventId,
           userId: payment.userId,
-          status: 'APPROVED',
+          status: participationStatus,
           paymentId: payment.id,
           phoneNumber: payment.phoneNumber,
         },
         update: {
-          status: 'APPROVED',
+          status: participationStatus,
           paymentId: payment.id,
           phoneNumber: payment.phoneNumber,
         },
