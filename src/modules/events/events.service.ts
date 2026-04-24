@@ -133,7 +133,7 @@ export async function getAllEvents(params: {
 }
 
 export async function getOwnedEvents(ownerId: string) {
-  return prisma.event.findMany({
+  const events = await prisma.event.findMany({
     where: { ownerId },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -141,6 +141,16 @@ export async function getOwnedEvents(ownerId: string) {
       _count: { select: { participations: true } },
     },
   });
+
+  return Promise.all(events.map(async (event) => {
+    const pendingRequestsCount = await prisma.participation.count({
+      where: {
+        eventId: event.id,
+        status: 'PENDING'
+      }
+    });
+    return { ...event, pendingRequestsCount };
+  }));
 }
 
 export async function getFeaturedEvent() {
