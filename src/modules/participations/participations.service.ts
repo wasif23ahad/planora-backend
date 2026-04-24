@@ -1,10 +1,12 @@
 import { prisma } from '../../config/prisma.js';
 import { ParticipationStatus, Visibility } from '@prisma/client';
 import { AppError } from '../../middleware/error.js';
+import * as notificationService from '../notifications/notifications.service.js';
 
-export async function joinEvent(eventId: string, userId: string, phoneNumber?: string) {
+export async function joinEvent(eventId: string, userId: string, phoneNumber?: string, message?: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
+    include: { owner: true }
   });
 
   if (!event) {
@@ -32,21 +34,33 @@ export async function joinEvent(eventId: string, userId: string, phoneNumber?: s
   }
 
   // Determine status
-  // Public Free -> APPROVED
-  // Private Free -> PENDING
   const status: ParticipationStatus = 
     event.visibility === Visibility.PUBLIC 
       ? ParticipationStatus.APPROVED 
       : ParticipationStatus.PENDING;
 
-  return (prisma.participation as any).create({
+  const participation = await (prisma.participation as any).create({
     data: {
       eventId,
       userId,
       status,
       phoneNumber,
+      message,
     },
   });
+
+  // Notify owner if it's a pending request
+  if (status === ParticipationStatus.PENDING) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    await notificationService.createNotification({
+      userId: event.ownerId,
+      type: 'REQUEST',
+      message: `${user?.name || 'A user'} requested to join "${event.title}"`,
+      link: `/dashboard/events/${event.id}/participants`
+    });
+  }
+
+  return participation;
 }
 
 export async function getParticipantsByEvent(eventId: string) {

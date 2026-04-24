@@ -9,9 +9,8 @@ export async function join(req: Request, res: Response, next: NextFunction) {
   try {
     const eventId = req.params.id as string;
     const userId = req.user!.id;
-    const { phoneNumber } = req.body;
-
-    const participation = await participationService.joinEvent(eventId, userId, phoneNumber);
+    const { phoneNumber, message } = req.body;
+    const participation = await participationService.joinEvent(eventId, userId, phoneNumber, message);
     
     res.status(201).json(participation);
   } catch (error) {
