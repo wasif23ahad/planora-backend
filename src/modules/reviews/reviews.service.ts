@@ -27,6 +27,9 @@ export async function createReview(eventId: string, userId: string, data: Create
       eventId,
       userId,
     },
+    include: {
+      user: { select: { id: true, name: true } }
+    }
   });
 }
 
