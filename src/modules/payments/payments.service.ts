@@ -73,7 +73,14 @@ export async function verifyPayment(data: SSLCommerzValidationResponse) {
   if (!payment) throw new AppError('Payment record not found', 404);
 
   if (status === 'VALID') {
-    const participationStatus = payment.event.visibility === 'PRIVATE' ? 'PENDING' : 'APPROVED';
+    const invitation = await prisma.invitation.findUnique({
+      where: {
+        eventId_inviteeId: { eventId: payment.eventId, inviteeId: payment.userId }
+      }
+    });
+    
+    // If private event and NO invitation, set to PENDING (though this shouldn't happen with the new flow, it's a safe default).
+    const participationStatus = (payment.event.visibility === 'PRIVATE' && !invitation) ? 'PENDING' : 'APPROVED';
     
     await prisma.$transaction([
       (prisma.payment as any).update({

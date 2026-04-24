@@ -12,7 +12,9 @@ export async function joinEvent(eventId: string, userId: string, phoneNumber?: s
   }
 
   // Check if paid event
-  if (event.feeCents > 0) {
+  // Public paid events must go through checkout first.
+  // Private paid events can create a PENDING participation request.
+  if (event.feeCents > 0 && event.visibility === Visibility.PUBLIC) {
     throw new AppError('This is a paid event. Please use the checkout flow.', 400);
   }
 
