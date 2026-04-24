@@ -11,11 +11,10 @@ export async function joinEvent(eventId: string, userId: string, phoneNumber?: s
     throw new AppError('Event not found', 404);
   }
 
-  // Check if paid event
-  // Public paid events must go through checkout first.
-  // Private paid events can create a PENDING participation request.
+  // Check if paid event - Public paid events require immediate checkout.
+  // Private paid events start with a "Request to Join" which doesn't require immediate payment.
   if (event.feeCents > 0 && event.visibility === Visibility.PUBLIC) {
-    throw new AppError('This is a paid event. Please use the checkout flow.', 400);
+    throw new AppError('This is a paid public event. Please use the checkout flow.', 400);
   }
 
   // Check if already participating
@@ -91,7 +90,7 @@ export async function getParticipationById(id: string) {
   });
 }
 export async function getJoinedEvents(userId: string) {
-  return prisma.participation.findMany({
+  const participations = await prisma.participation.findMany({
     where: { userId },
     include: {
       event: {
@@ -102,4 +101,20 @@ export async function getJoinedEvents(userId: string) {
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  const enriched = await Promise.all(
+    participations.map(async (p) => {
+      const invitation = await (prisma.invitation as any).findUnique({
+        where: {
+          eventId_inviteeId: { eventId: p.eventId, inviteeId: userId },
+        },
+      });
+      return {
+        ...p,
+        invitationStatus: invitation?.status || null,
+      };
+    })
+  );
+
+  return enriched;
 }

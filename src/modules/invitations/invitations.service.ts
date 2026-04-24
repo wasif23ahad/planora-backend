@@ -65,7 +65,7 @@ export async function updateInvitationStatus(invitationId: string, userId: strin
 
     if (status === InvitationStatus.ACCEPTED) {
       if (invitation.event.feeCents === 0) {
-        // Free event -> Join immediately
+        // Free event -> Join immediately (Approve participation)
         await tx.participation.upsert({
           where: {
             eventId_userId: { eventId: invitation.eventId, userId: userId },
@@ -77,6 +77,22 @@ export async function updateInvitationStatus(invitationId: string, userId: strin
           },
           update: {
             status: ParticipationStatus.APPROVED,
+          },
+        });
+      } else {
+        // Paid private event -> Ensure participation exists as PENDING
+        // The user will pay for it through the dashboard
+        await tx.participation.upsert({
+          where: {
+            eventId_userId: { eventId: invitation.eventId, userId: userId },
+          },
+          create: {
+            eventId: invitation.eventId,
+            userId: userId,
+            status: ParticipationStatus.PENDING,
+          },
+          update: {
+            // Keep as PENDING if it already exists
           },
         });
       }

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as participationService from './participations.service.js';
 import * as eventService from '../events/events.service.js';
+import * as invitationService from '../invitations/invitations.service.js';
+import { prisma } from '../../config/prisma.js';
 import { AppError } from '../../middleware/error.js';
 
 export async function join(req: Request, res: Response, next: NextFunction) {
@@ -39,7 +41,8 @@ export async function getEventParticipants(req: Request, res: Response, next: Ne
 
 export async function updateStatus(req: Request, res: Response, next: NextFunction) {
   try {
-    const { eventId, userId } = req.params;
+    const eventId = req.params.eventId as string;
+    const userId = req.params.userId as string;
     const { status } = req.body;
 
     const event = await eventService.getEventById(eventId as string);
@@ -49,6 +52,31 @@ export async function updateStatus(req: Request, res: Response, next: NextFuncti
 
     if (event.ownerId !== req.user!.id) {
       throw new AppError('Forbidden: you do not own this event', 403);
+    }
+
+    if (event.visibility === 'PRIVATE' && status === 'APPROVED') {
+      // Find the user to get their email for the invitation
+      const userToInvite = await prisma.user.findUnique({ where: { id: userId } });
+      if (!userToInvite) throw new AppError('User not found', 404);
+
+      // Create an invitation from the owner to the user
+      const invitation = await invitationService.createInvitation(
+        eventId as string,
+        req.user!.id,
+        userToInvite.email
+      );
+
+      // Delete the pending participation record so it "goes out" as requested.
+      // The user will now see the invitation in their invitations tab.
+      await prisma.participation.delete({
+        where: {
+          eventId_userId: { eventId: eventId as string, userId: userId as string },
+        },
+      });
+
+      // We return the invitation.
+      res.json({ message: 'Request approved, invitation sent', invitation });
+      return;
     }
 
     const participation = await participationService.updateParticipationStatus(
