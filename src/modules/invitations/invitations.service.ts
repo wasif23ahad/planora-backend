@@ -33,7 +33,7 @@ export async function getMyInvitations(userId: string) {
     where: { inviteeId: userId },
     include: {
       event: {
-        select: { title: true, date: true, venue: true, feeCents: true },
+        select: { id: true, title: true, date: true, venue: true, feeCents: true },
       },
       sender: {
         select: { name: true },
