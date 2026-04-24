@@ -30,7 +30,15 @@ export async function joinEvent(eventId: string, userId: string, phoneNumber?: s
     if (existingParticipation.status === ParticipationStatus.BANNED) {
       throw new AppError('You are banned from this event', 403);
     }
-    throw new AppError('You are already a participant or have a pending request', 409);
+    
+    // If rejected, allow re-applying by deleting the old participation
+    if (existingParticipation.status === ParticipationStatus.REJECTED) {
+      await prisma.participation.delete({
+        where: { id: existingParticipation.id }
+      });
+    } else {
+      throw new AppError('You are already a participant or have a pending request', 409);
+    }
   }
 
   // Determine status
