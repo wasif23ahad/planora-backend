@@ -6,14 +6,19 @@ import { toggleUserStatusSchema } from './admin.schemas.js';
 
 const router = Router();
 
-router.use(requireAuth, requireRole('ADMIN'));
+router.use(requireAuth);
 
-router.get('/users', adminController.getUsers);
-router.patch('/users/:id/status', validate(toggleUserStatusSchema), adminController.toggleUserStatus);
-router.delete('/users/:id', adminController.deleteUser);
-router.get('/events', adminController.getEvents);
-router.delete('/events/:id', adminController.deleteEvent);
-router.patch('/events/:id/feature', adminController.toggleFeature);
-router.get('/stats', adminController.getStats);
+// Read-only — both managers and admins
+router.get('/users',  requireRole('ADMIN', 'MANAGER'), adminController.getUsers);
+router.get('/events', requireRole('ADMIN', 'MANAGER'), adminController.getEvents);
+router.get('/stats',  requireRole('ADMIN', 'MANAGER'), adminController.getStats);
+
+// Write — manager can feature, admin can do everything
+router.patch('/events/:id/feature', requireRole('ADMIN', 'MANAGER'), adminController.toggleFeature);
+
+// Admin-only writes
+router.patch('/users/:id/status', requireRole('ADMIN'), validate(toggleUserStatusSchema), adminController.toggleUserStatus);
+router.delete('/users/:id',       requireRole('ADMIN'), adminController.deleteUser);
+router.delete('/events/:id',      requireRole('ADMIN'), adminController.deleteEvent);
 
 export default router;

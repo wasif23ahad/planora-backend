@@ -41,9 +41,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 }
 
-export function requireRole(role: string) {
+import { Role } from '@prisma/client';
+
+export function requireRole(...allowed: Role[]) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || req.user.role !== role) {
+    if (!req.user || !allowed.includes(req.user.role as Role)) {
       return next(new AppError('Forbidden: insufficient permissions', 403));
     }
     next();

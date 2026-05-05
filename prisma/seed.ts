@@ -28,6 +28,24 @@ async function main() {
     },
   });
 
+  const manager = await prisma.user.create({
+    data: {
+      name: 'Operations Manager',
+      email: 'manager@planora.com',
+      passwordHash: hashedPassword,
+      role: Role.MANAGER,
+    },
+  });
+
+  const userDemo = await prisma.user.create({
+    data: {
+      name: 'Demo User',
+      email: 'user@planora.com',
+      passwordHash: hashedPassword,
+      role: Role.USER,
+    },
+  });
+
   const owner = await prisma.user.create({
     data: {
       name: 'Event Organizer',
@@ -46,7 +64,7 @@ async function main() {
     },
   });
 
-  console.log('👥 Created users (Admin, Owner, Member).');
+  console.log('👥 Created users (Admin, Manager, UserDemo, Owner, Member).');
 
   // 3. Create Events
   const event1 = await prisma.event.create({
