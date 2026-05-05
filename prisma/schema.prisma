@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,6 +5,134 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  passwordHash    String?
+  role            Role             @default(USER)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  googleId        String?          @unique
+  phoneNumber     String?
+  ownedEvents     Event[]          @relation("EventOwner")
+  invitations     Invitation[]     @relation("Invitee")
+  sentInvitations Invitation[]     @relation("Sender")
+  notifications   Notification[]
+  participations  Participation[]
+  payments        Payment[]
+  reviews         Review[]
+  supportMessages SupportMessage[]
+}
+
+model Event {
+  id             String          @id @default(cuid())
+  title          String
+  description    String
+  date           DateTime
+  venue          String
+  visibility     Visibility
+  feeCents       Int             @default(0)
+  coverImage     String?
+  isFeatured     Boolean         @default(false)
+  ownerId        String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  category       String
+  owner          User            @relation("EventOwner", fields: [ownerId], references: [id])
+  invitations    Invitation[]
+  participations Participation[]
+  payments       Payment[]
+  reviews        Review[]
+
+  @@index([date])
+  @@index([visibility, feeCents])
+}
+
+model Participation {
+  id          String              @id @default(cuid())
+  eventId     String
+  userId      String
+  status      ParticipationStatus @default(PENDING)
+  paymentId   String?             @unique
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  phoneNumber String?
+  message     String?
+  event       Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  payment     Payment?            @relation(fields: [paymentId], references: [id])
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Invitation {
+  id        String           @id @default(cuid())
+  eventId   String
+  inviteeId String
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  senderId  String
+  event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  invitee   User             @relation("Invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+  sender    User             @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, inviteeId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Payment {
+  id            String         @id @default(cuid())
+  userId        String
+  eventId       String
+  amountCents   Int
+  status        PaymentStatus  @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  transactionId String         @unique
+  valId         String?        @unique
+  phoneNumber   String?
+  participation Participation?
+  event         Event          @relation(fields: [eventId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
 }
 
 enum Role {
@@ -35,138 +162,4 @@ enum PaymentStatus {
   PENDING
   SUCCEEDED
   FAILED
-}
-
-model User {
-  id             String   @id @default(cuid())
-  name           String
-  email          String   @unique
-  passwordHash   String?
-  googleId       String?  @unique
-  phoneNumber    String?
-  role           Role     @default(USER)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  ownedEvents    Event[]         @relation("EventOwner")
-  participations Participation[]
-  invitations    Invitation[]    @relation("Invitee")
-  sentInvitations Invitation[]   @relation("Sender")
-  reviews        Review[]
-  payments       Payment[]
-  supportMessages SupportMessage[]
-  notifications   Notification[]
-}
-
-model Event {
-  id           String     @id @default(cuid())
-  title        String
-  description  String
-  date         DateTime
-  venue        String
-  category     String
-  visibility   Visibility
-  feeCents     Int        @default(0)
-  coverImage   String?
-  isFeatured   Boolean    @default(false)
-  ownerId      String
-  owner        User       @relation("EventOwner", fields: [ownerId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  participations Participation[]
-  invitations    Invitation[]
-  reviews        Review[]
-  payments       Payment[]
-
-  @@index([date])
-  @@index([visibility, feeCents])
-}
-
-model Participation {
-  id        String               @id @default(cuid())
-  eventId   String
-  userId    String
-  status    ParticipationStatus  @default(PENDING)
-  paymentId String?              @unique
-  phoneNumber String?
-  message     String?
-  createdAt   DateTime            @default(now())
-  updatedAt DateTime             @updatedAt
-
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payment   Payment? @relation(fields: [paymentId], references: [id])
-
-  @@unique([eventId, userId])
-}
-
-model Invitation {
-  id         String           @id @default(cuid())
-  eventId    String
-  senderId   String
-  inviteeId  String
-  status     InvitationStatus @default(PENDING)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  sender     User  @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
-  invitee    User  @relation("Invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, inviteeId])
-}
-
-model Review {
-  id        String   @id @default(cuid())
-  eventId   String
-  userId    String
-  rating    Int
-  comment   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, userId])
-}
-
-model Payment {
-  id                    String        @id @default(cuid())
-  userId                String
-  eventId               String
-  amountCents           Int
-  transactionId         String        @unique
-  valId                 String?       @unique
-  phoneNumber           String?
-  status                PaymentStatus @default(PENDING)
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-
-  user          User           @relation(fields: [userId], references: [id])
-  event         Event          @relation(fields: [eventId], references: [id])
-  participation Participation?
-}
-
-model SupportMessage {
-  id        String   @id @default(cuid())
-  senderId  String
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  content   String
-  createdAt DateTime @default(now())
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // 'INVITATION', 'UPCOMING_EVENT', 'REQUEST'
-  message   String
-  link      String?
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([userId, isRead])
 }
