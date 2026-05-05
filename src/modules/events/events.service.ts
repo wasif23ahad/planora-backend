@@ -78,23 +78,29 @@ export async function getAllEvents(params: {
   }
 
   if (category) {
-    switch (category) {
-      case 'public-free':
-        where.visibility = 'PUBLIC';
-        where.feeCents = 0;
-        break;
-      case 'public-paid':
-        where.visibility = 'PUBLIC';
-        where.feeCents = { gt: 0 };
-        break;
-      case 'private-free':
-        where.visibility = 'PRIVATE';
-        where.feeCents = 0;
-        break;
-      case 'private-paid':
-        where.visibility = 'PRIVATE';
-        where.feeCents = { gt: 0 };
-        break;
+    const compound = ['public-free', 'public-paid', 'private-free', 'private-paid'];
+    if (compound.includes(category)) {
+      switch (category) {
+        case 'public-free':
+          where.visibility = 'PUBLIC';
+          where.feeCents = 0;
+          break;
+        case 'public-paid':
+          where.visibility = 'PUBLIC';
+          where.feeCents = { gt: 0 };
+          break;
+        case 'private-free':
+          where.visibility = 'PRIVATE';
+          where.feeCents = 0;
+          break;
+        case 'private-paid':
+          where.visibility = 'PRIVATE';
+          where.feeCents = { gt: 0 };
+          break;
+      }
+    } else {
+      // literal category from Event.category column
+      where.category = { equals: category, mode: 'insensitive' };
     }
   }
 

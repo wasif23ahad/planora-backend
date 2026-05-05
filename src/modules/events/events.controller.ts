@@ -88,8 +88,8 @@ export async function remove(req: Request, res: Response, next: any) {
 
 export async function list(req: Request, res: Response, next: any) {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 12;
+    const page = Math.max(1, Number(req.query.page ?? 1) || 1);
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit ?? 12) || 12));
     const upcoming = req.query.upcoming === 'true';
 
     const result = await eventService.getAllEvents({
