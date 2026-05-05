@@ -75,9 +75,12 @@ npx prisma db push
 npx prisma db seed
 ```
 **Seed Accounts:**
-- **Admin**: `admin@planora.com` / `password123`
-- **Owner**: `owner@planora.com` / `password123`
-- **User**: `john@example.com` / `password123`
+
+| Role    | Email                  | Password    |
+|---------|------------------------|-------------|
+| Admin   | admin@planora.com      | password123 |
+| Manager | manager@planora.com    | password123 |
+| User    | user@planora.com       | password123 |
 
 ### 5. Running the Application
 ```bash
