@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://neondb_owner:npg_M1La0kIyRjKF@ep-late-rain-ao1mxvq6.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
 }
 
 model User {
@@ -60,8 +60,8 @@ model Participation {
   paymentId   String?             @unique
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
-  phoneNumber String?
   message     String?
+  phoneNumber String?
   event       Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   payment     Payment?            @relation(fields: [paymentId], references: [id])
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -106,9 +106,9 @@ model Payment {
   status        PaymentStatus  @default(PENDING)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  phoneNumber   String?
   transactionId String         @unique
   valId         String?        @unique
-  phoneNumber   String?
   participation Participation?
   event         Event          @relation(fields: [eventId], references: [id])
   user          User           @relation(fields: [userId], references: [id])
@@ -137,8 +137,8 @@ model Notification {
 
 enum Role {
   USER
-  MANAGER
   ADMIN
+  MANAGER
 }
 
 enum Visibility {

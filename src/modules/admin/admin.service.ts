@@ -60,24 +60,29 @@ export async function getStats() {
 }
 
 export async function getCharts() {
-  // Bar: events by category
-  const eventsByCategory = await prisma.event.groupBy({
-    by: ['category'],
-    _count: { _all: true },
-    orderBy: { _count: { category: 'desc' } },
-  });
-
-  // Line: user signups per month, last 12 months
   const since = new Date();
   since.setMonth(since.getMonth() - 11);
   since.setDate(1);
   since.setHours(0, 0, 0, 0);
 
-  const users = await prisma.user.findMany({
-    where: { createdAt: { gte: since } },
-    select: { createdAt: true },
-  });
+  // Parallelize all primary DB fetches
+  const [eventsByCategoryRaw, users, payments] = await Promise.all([
+    prisma.event.groupBy({
+      by: ['category'],
+      _count: { _all: true },
+      orderBy: { _count: { category: 'desc' } },
+    }),
+    prisma.user.findMany({
+      where: { createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
+    prisma.payment.findMany({
+      where: { status: 'SUCCEEDED' },
+      select: { amountCents: true, event: { select: { id: true, title: true } } },
+    }),
+  ]);
 
+  // Line Chart Logic: user signups per month
   const months: { key: string; label: string; count: number }[] = [];
   for (let i = 0; i < 12; i++) {
     const d = new Date(since);
@@ -92,11 +97,7 @@ export async function getCharts() {
     if (slot) slot.count++;
   }
 
-  // Pie: revenue by event, top 6 + Other
-  const payments = await prisma.payment.findMany({
-    where: { status: 'SUCCEEDED' },
-    select: { amountCents: true, event: { select: { id: true, title: true } } },
-  });
+  // Pie Chart Logic: revenue by event
   const byEvent = new Map<string, { title: string; amountCents: number }>();
   for (const p of payments) {
     const id = p.event.id;
@@ -112,7 +113,7 @@ export async function getCharts() {
     : top;
 
   return {
-    eventsByCategory: eventsByCategory.map(r => ({ category: r.category, count: r._count._all })),
+    eventsByCategory: eventsByCategoryRaw.map(r => ({ category: r.category, count: r._count._all })),
     signupsByMonth: months,
     revenueByEvent,
   };

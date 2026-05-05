@@ -13,6 +13,7 @@ router.get('/users',  requireRole('ADMIN', 'MANAGER'), adminController.getUsers)
 router.get('/events', requireRole('ADMIN', 'MANAGER'), adminController.getEvents);
 router.get('/stats',  requireRole('ADMIN', 'MANAGER'), adminController.getStats);
 router.get('/charts', requireRole('ADMIN', 'MANAGER'), adminController.getCharts);
+router.get('/reviews', requireRole('ADMIN', 'MANAGER'), adminController.getReviews);
 
 // Write — manager can feature, admin can do everything
 router.patch('/events/:id/feature', requireRole('ADMIN', 'MANAGER'), adminController.toggleFeature);
