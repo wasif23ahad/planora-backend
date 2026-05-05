@@ -82,3 +82,12 @@ export async function getCharts(req: Request, res: Response, next: NextFunction)
     next(e);
   }
 }
+
+export async function getReviews(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reviews = await adminService.getAllReviews();
+    res.json(reviews);
+  } catch (e) {
+    next(e);
+  }
+}

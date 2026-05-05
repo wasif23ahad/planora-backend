@@ -118,3 +118,13 @@ export async function getCharts() {
     revenueByEvent,
   };
 }
+
+export async function getAllReviews() {
+  return prisma.review.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      event: { select: { id: true, title: true } },
+      user: { select: { id: true, name: true } },
+    },
+  });
+}
