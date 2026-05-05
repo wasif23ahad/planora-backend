@@ -187,7 +187,97 @@ async function main() {
     },
   });
 
-  console.log('📅 Created sample events (Dhaka set).');
+  const event9 = await prisma.event.create({
+    data: {
+      title: 'Dhaka Tech Summit 2026',
+      description: 'Join the brightest minds in Bangladesh for a day of innovation and networking.',
+      date: new Date('2026-07-15T09:00:00Z'),
+      venue: 'Bangabandhu International Conference Center, Dhaka',
+      category: 'Technology',
+      coverImage: '/images/events/dhaka_tech_summit.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 150000,
+      isFeatured: true,
+      ownerId: admin.id,
+    },
+  });
+
+  const event10 = await prisma.event.create({
+    data: {
+      title: 'Chittagong Cricket Championship',
+      description: 'The local league final featuring the best talent from the port city.',
+      date: new Date('2026-08-05T14:00:00Z'),
+      venue: 'Zohur Ahmed Chowdhury Stadium, Chittagong',
+      category: 'Sports',
+      coverImage: '/images/events/chittagong_cricket.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 30000,
+      isFeatured: false,
+      ownerId: owner.id,
+    },
+  });
+
+  const event11 = await prisma.event.create({
+    data: {
+      title: 'Sylhet Tea Garden Meetup',
+      description: 'A serene afternoon of networking and tea tasting in the hills of Sylhet.',
+      date: new Date('2026-06-20T16:00:00Z'),
+      venue: 'Lakkatura Tea Garden, Sylhet',
+      category: 'Meetup',
+      coverImage: '/images/events/sylhet_tea_meetup.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 0,
+      isFeatured: true,
+      ownerId: owner.id,
+    },
+  });
+
+  const event12 = await prisma.event.create({
+    data: {
+      title: 'Dhaka Art & Culture Festival',
+      description: 'Celebrating the rich heritage of Bangladesh through art, music, and dance.',
+      date: new Date('2026-09-10T11:00:00Z'),
+      venue: 'Shilpakala Academy, Dhaka',
+      category: 'Culture',
+      coverImage: '/images/events/dhaka_culture_fest.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 50000,
+      isFeatured: false,
+      ownerId: manager.id,
+    },
+  });
+
+  const event13 = await prisma.event.create({
+    data: {
+      title: 'Sylhet Tech Innovators Meetup',
+      description: 'Connecting developers and tech enthusiasts in the northern hub.',
+      date: new Date('2026-10-12T18:00:00Z'),
+      venue: 'Sylhet IT Park, Sylhet',
+      category: 'Technology',
+      coverImage: '/images/events/sylhet_tech_innovators.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 0,
+      isFeatured: false,
+      ownerId: owner.id,
+    },
+  });
+
+  const event14 = await prisma.event.create({
+    data: {
+      title: 'Chittagong Port City Marathon',
+      description: 'Run along the beautiful Marine Drive and experience the energy of the port city.',
+      date: new Date('2026-11-20T06:00:00Z'),
+      venue: 'Marine Drive, Chittagong',
+      category: 'Sports',
+      coverImage: '/images/events/chittagong_marathon.png',
+      visibility: Visibility.PUBLIC,
+      feeCents: 100000,
+      isFeatured: true,
+      ownerId: admin.id,
+    },
+  });
+
+  console.log('📅 Created sample events (Dhaka, Sylhet, Chittagong set).');
 
   // 4. Create Participations
   await prisma.participation.create({
