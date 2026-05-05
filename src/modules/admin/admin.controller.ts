@@ -73,3 +73,12 @@ export async function getStats(req: Request, res: Response, next: NextFunction) 
     next(error);
   }
 }
+
+export async function getCharts(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await adminService.getCharts();
+    res.json(data);
+  } catch (e) {
+    next(e);
+  }
+}

@@ -58,3 +58,62 @@ export async function getStats() {
     totalRevenue: revenueSum._sum.amountCents || 0,
   };
 }
+
+export async function getCharts() {
+  // Bar: events by category
+  const eventsByCategory = await prisma.event.groupBy({
+    by: ['category'],
+    _count: { _all: true },
+    orderBy: { _count: { category: 'desc' } },
+  });
+
+  // Line: user signups per month, last 12 months
+  const since = new Date();
+  since.setMonth(since.getMonth() - 11);
+  since.setDate(1);
+  since.setHours(0, 0, 0, 0);
+
+  const users = await prisma.user.findMany({
+    where: { createdAt: { gte: since } },
+    select: { createdAt: true },
+  });
+
+  const months: { key: string; label: string; count: number }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(since);
+    d.setMonth(since.getMonth() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleString('en-US', { month: 'short' });
+    months.push({ key, label, count: 0 });
+  }
+  for (const u of users) {
+    const k = `${u.createdAt.getFullYear()}-${String(u.createdAt.getMonth() + 1).padStart(2, '0')}`;
+    const slot = months.find(m => m.key === k);
+    if (slot) slot.count++;
+  }
+
+  // Pie: revenue by event, top 6 + Other
+  const payments = await prisma.payment.findMany({
+    where: { status: 'SUCCEEDED' },
+    select: { amountCents: true, event: { select: { id: true, title: true } } },
+  });
+  const byEvent = new Map<string, { title: string; amountCents: number }>();
+  for (const p of payments) {
+    const id = p.event.id;
+    const cur = byEvent.get(id) ?? { title: p.event.title, amountCents: 0 };
+    cur.amountCents += p.amountCents;
+    byEvent.set(id, cur);
+  }
+  const sorted = [...byEvent.values()].sort((a, b) => b.amountCents - a.amountCents);
+  const top = sorted.slice(0, 6);
+  const otherTotal = sorted.slice(6).reduce((s, x) => s + x.amountCents, 0);
+  const revenueByEvent = otherTotal > 0
+    ? [...top, { title: 'Other', amountCents: otherTotal }]
+    : top;
+
+  return {
+    eventsByCategory: eventsByCategory.map(r => ({ category: r.category, count: r._count._all })),
+    signupsByMonth: months,
+    revenueByEvent,
+  };
+}
